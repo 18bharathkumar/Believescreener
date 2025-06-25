@@ -1,5 +1,5 @@
 import { View, StyleSheet, FlatList, RefreshControl, ActivityIndicator, Text } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '@/components/Header';
 import { TokenDescriptionCard } from '@/components/TokenDescriptionCard';
@@ -171,7 +171,8 @@ export default function TokensScreen() {
     <TokenCard token={item} />
   );
 
-  const renderHeader = () => (
+  // Memoize the header to prevent remounting and losing focus in SearchBar
+  const header = useMemo(() => (
     <>
       <Header />
       <TokenDescriptionCard />
@@ -181,7 +182,7 @@ export default function TokensScreen() {
         onFilterPress={handleFilterPress}
       />
     </>
-  );
+  ), [searchQuery, handleFilterPress]);
 
   const renderFooter = () => (
     <>
@@ -223,7 +224,6 @@ export default function TokensScreen() {
   if (loading && tokens.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        {renderHeader()}
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -237,7 +237,7 @@ export default function TokensScreen() {
         data={filteredTokens}
         renderItem={renderTokenCard}
         keyExtractor={(item) => item.tokenAddress}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={header}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
         refreshControl={
